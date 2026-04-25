@@ -1,0 +1,15 @@
+[
+  {
+    "id": 2,
+    "name": "金水湖",
+    "lat": 30.882,
+    "lon": 121.349,
+    "description": "上海路亚标点分享，15号标点，金水湖",
+    "source_url": "https://www.xiaohongshu.com/explore/test456",
+    "likes": 26,
+    "species": "鲈鱼",
+    "catch_result": "",
+    "added_by": "test_spots3",
+    "created_at": "2026-04-25 19:23:22"
+  }
+]
