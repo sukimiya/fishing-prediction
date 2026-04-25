@@ -347,6 +347,8 @@ function tryCreateMap() {
   if (container.offsetParent === null) return;
   amapMap = new AMap.Map('mapContainer', { zoom: 13, center: [121.5, 31.2], mapStyle: 'amap://styles/dark' });
   amapMap.on('click', e => updateLocation(e.lnglat.getLat(), e.lnglat.getLng()));
+  // Load fishing spots markers
+  loadSpots();
   // Auto GPS on first load
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -439,6 +441,55 @@ document.addEventListener('click', e => {
 });
 
 // ======================== Auto Predict ========================
+let spotsMarkers = [];
+let spotsLoaded = false;
+
+async function loadSpots() {
+  if (spotsLoaded || !amapMap || !token) return;
+  try {
+    const data = await apiGet('/api/spots');
+    if (data.success && data.spots) {
+      renderSpots(data.spots);
+      spotsLoaded = true;
+    }
+  } catch(e) {
+    console.error('[Spots] load failed:', e.message);
+  }
+}
+
+function renderSpots(spots) {
+  if (!amapMap) return;
+  spotsMarkers.forEach(m => m.setMap(null));
+  spotsMarkers = [];
+
+  spots.forEach(spot => {
+    const marker = new AMap.Marker({
+      position: [spot.lon, spot.lat],
+      title: spot.name,
+      label: { content: `<div style="background:#ff6b35;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;white-space:nowrap">${escHtml(spot.name)}</div>`, direction: 'top' },
+    });
+
+    let html = `<div style="max-width:260px;color:#333;font-size:13px;line-height:1.6">
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">${escHtml(spot.name)}</div>`;
+    if (spot.description) html += `<div style="color:#555;margin-bottom:4px">${escHtml(spot.description)}</div>`;
+    if (spot.species) html += `<div>🐟 鱼种: ${escHtml(spot.species)}</div>`;
+    if (spot.catch_result) html += `<div>${spot.catch_result === 'positive' ? '✅ 上鱼' : '❌ 打龟'}</div>`;
+    html += `<div>👍 ${spot.likes} 赞</div>`;
+    if (spot.source_url) html += `<div style="margin-top:4px"><a href="${escHtml(spot.source_url)}" target="_blank" style="color:#1a8cff;text-decoration:none;font-weight:600">🔗 查看原文</a></div>`;
+    html += `<div style="font-size:11px;color:#999;margin-top:4px">由 ${escHtml(spot.added_by)} 添加</div></div>`;
+
+    const info = new AMap.InfoWindow({ content: html, offset: new AMap.Pixel(0, -30) });
+    marker.on('click', () => info.open(amapMap, [spot.lon, spot.lat]));
+    marker.setMap(amapMap);
+    spotsMarkers.push(marker);
+  });
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 async function autoPredict() {
   const lat = document.getElementById('latInput').value;
   const lon = document.getElementById('lonInput').value;

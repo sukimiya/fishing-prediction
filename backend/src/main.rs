@@ -1,9 +1,9 @@
 use axum::{
-    extract::Query,
+    extract::{Path, Query},
     http::{Request, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{delete, get},
     Json, Router,
 };
 use chrono::Utc;
@@ -94,6 +94,37 @@ pub struct AuthResponse {
 }
 
 // ---------------------------------------------------------------------------
+// Spot models
+// ---------------------------------------------------------------------------
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct FishingSpot {
+    pub id: i64,
+    pub name: String,
+    pub lat: f64,
+    pub lon: f64,
+    pub description: String,
+    pub source_url: String,
+    pub likes: i32,
+    pub species: String,
+    pub catch_result: String,
+    pub added_by: String,
+    pub created_at: String,
+}
+
+#[derive(Deserialize)]
+pub struct CreateSpotRequest {
+    pub name: String,
+    pub lat: f64,
+    pub lon: f64,
+    pub description: Option<String>,
+    pub source_url: Option<String>,
+    pub likes: Option<i32>,
+    pub species: Option<String>,
+    pub catch_result: Option<String>,
+}
+
+// ---------------------------------------------------------------------------
 // Shared state
 // ---------------------------------------------------------------------------
 
@@ -101,6 +132,8 @@ pub struct AuthResponse {
 pub struct AppState {
     pub secret: String,
     pub users: Arc<tokio::sync::RwLock<HashMap<String, String>>>, // nickname -> hashed invite
+    pub spots: Arc<tokio::sync::RwLock<Vec<FishingSpot>>>,
+    pub spots_path: PathBuf,
 }
 
 // ---------------------------------------------------------------------------
@@ -251,6 +284,84 @@ async fn login(
         nickname: Some(nickname),
         error: None,
     })
+}
+
+// ---------------------------------------------------------------------------
+// Spot routes (protected)
+// ---------------------------------------------------------------------------
+
+async fn list_spots(
+    state: axum::extract::State<AppState>,
+) -> Json<serde_json::Value> {
+    let spots = state.spots.read().await;
+    Json(serde_json::json!({
+        "success": true,
+        "spots": spots.clone(),
+    }))
+}
+
+async fn create_spot(
+    state: axum::extract::State<AppState>,
+    claims: axum::extract::Extension<Claims>,
+    Json(req): Json<CreateSpotRequest>,
+) -> Response {
+    if req.name.trim().is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(serde_json::json!({
+            "success": false, "error": "Name is required"
+        }))).into_response();
+    }
+
+    let mut spots = state.spots.write().await;
+    let new_id = spots.last().map(|s| s.id + 1).unwrap_or(1);
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
+
+    let spot = FishingSpot {
+        id: new_id,
+        name: req.name.trim().to_string(),
+        lat: req.lat,
+        lon: req.lon,
+        description: req.description.unwrap_or_default(),
+        source_url: req.source_url.unwrap_or_default(),
+        likes: req.likes.unwrap_or(0),
+        species: req.species.unwrap_or_default(),
+        catch_result: req.catch_result.unwrap_or_default(),
+        added_by: claims.0.sub.clone(),
+        created_at: now,
+    };
+
+    spots.push(spot.clone());
+
+    // Persist to file
+    if let Ok(json) = serde_json::to_string_pretty(&*spots) {
+        let _ = std::fs::write(&state.spots_path, &json);
+    }
+
+    (StatusCode::CREATED, Json(serde_json::json!({
+        "success": true,
+        "spot": spot,
+    }))).into_response()
+}
+
+async fn delete_spot(
+    state: axum::extract::State<AppState>,
+    Path(id): Path<i64>,
+) -> Json<serde_json::Value> {
+    let mut spots = state.spots.write().await;
+    let len = spots.len();
+    spots.retain(|s| s.id != id);
+
+    if spots.len() == len {
+        return Json(serde_json::json!({
+            "success": false, "error": "Spot not found"
+        }));
+    }
+
+    // Persist to file
+    if let Ok(json) = serde_json::to_string_pretty(&*spots) {
+        let _ = std::fs::write(&state.spots_path, &json);
+    }
+
+    Json(serde_json::json!({ "success": true }))
 }
 
 // ---------------------------------------------------------------------------
@@ -424,9 +535,21 @@ async fn main() {
     info!("JWT secret initialized ({} bytes)", secret.len());
     info!("Invite code: {}", INVITE_CODE);
 
+    // Load spots from file
+    let spots_path = project_root().join("backend").join("spots.json");
+    let spots: Vec<FishingSpot> = if spots_path.exists() {
+        let content = std::fs::read_to_string(&spots_path).unwrap_or_default();
+        serde_json::from_str(&content).unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    info!("Loaded {} fishing spots from {:?}", spots.len(), spots_path);
+
     let state = AppState {
         secret,
         users: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
+        spots: Arc::new(tokio::sync::RwLock::new(spots)),
+        spots_path,
     };
 
     // Public routes (no auth needed)
@@ -439,6 +562,8 @@ async fn main() {
     let protected_routes = Router::new()
         .route("/predict", get(predict))
         .route("/predict/day", get(predict_day))
+        .route("/api/spots", get(list_spots).post(create_spot))
+        .route("/api/spots/{id}", delete(delete_spot))
         .layer(middleware::from_fn_with_state(state.clone(), auth_middleware));
 
     let frontend = ServeDir::new(project_root().join("backend").join("frontend"));
