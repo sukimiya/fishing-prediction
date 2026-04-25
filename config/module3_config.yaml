@@ -1,0 +1,44 @@
+# Module 3: Prediction Model Configuration
+
+factors:
+  temperature:
+    enabled: true
+    weight: 0.25
+    optimal_range: [18, 26]  # Celsius
+  pressure:
+    enabled: true
+    weight: 0.20
+    rising_boost: 0.15
+  time_of_day:
+    enabled: true
+    weight: 0.15
+    dawn_buffer_minutes: 60
+    dusk_buffer_minutes: 60
+  moon_phase:
+    enabled: true
+    weight: 0.10
+  season:
+    enabled: true
+    weight: 0.10
+  weather_condition:
+    enabled: true
+    weight: 0.10
+  wind:
+    enabled: true
+    weight: 0.05
+  water_level:
+    enabled: true
+    weight: 0.05
+
+model:
+  type: auto  # rule_based | logistic | gradient_boosting | auto
+  min_training_samples: 50
+  retrain_frequency_days: 30
+
+weather_api:
+  provider: open_meteo
+  cache_days: 7
+
+output:
+  prediction_dir: "outputs/module3"
+  data_dir: "data/module3"

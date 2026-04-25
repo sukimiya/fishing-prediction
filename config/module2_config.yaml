@@ -1,0 +1,24 @@
+# Module 2: Competitive Analysis Configuration
+
+tracked_apps:
+  - name: "钓鱼天气预报"
+    apple_id: "1488431932"
+    store: "apple_app_store_cn"
+  - name: "正口-让路亚更简单"
+    apple_id: "6469984171"
+    store: "apple_app_store_cn"
+  - name: "钓鱼佬"
+    apple_id: "6443960894"
+    store: "apple_app_store_cn"
+  - name: "钓鱼人"
+    apple_id: "1028971150"
+    store: "apple_app_store_cn"
+  - name: "Fishbrain"
+    apple_id: "477967747"
+    store: "apple_app_store_us"
+
+storage:
+  db_path: "data/module2/competitor_tracker.db"
+
+tracking:
+  max_snapshots_per_app: 365  # keep 1 year of daily snapshots
