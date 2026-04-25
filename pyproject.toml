@@ -1,0 +1,8 @@
+[project]
+name = "fishing-prediction"
+version = "0.1.0"
+description = "纯软件探鱼 — Market research, competitive analysis, and fish activity prediction"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["module1_market_research/tests", "module2_competitive_analysis/tests", "module3_prediction_model/tests"]

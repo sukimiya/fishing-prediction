@@ -1,0 +1,28 @@
+# Module 1: Market Research Scraper Configuration
+
+target_apps:
+  - name: "钓鱼人"
+    apple_id: ""  # TODO: fill in after lookup
+    android_package: ""  # TODO
+  - name: "正口-让路亚更简单"
+    apple_id: "6469984171"
+    android_package: ""
+  - name: "钓鱼佬"
+    apple_id: "6443960894"
+    android_package: ""
+  - name: "钓鱼天气预报"
+    apple_id: "1488431932"
+    android_package: "com.fish.weather.mm"
+  - name: "Fishbrain"
+    apple_id: "477967747"
+    android_package: "com.fishbrain.app"
+
+scraping:
+  max_reviews_per_app: 200
+  cache_ttl_hours: 24
+  request_timeout_seconds: 30
+  max_retries: 3
+
+output:
+  report_dir: "outputs/module1"
+  data_dir: "data/module1"
