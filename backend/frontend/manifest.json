@@ -1,0 +1,12 @@
+{
+  "name": "FishPal 鱼情预测",
+  "short_name": "FishPal",
+  "description": "个人钓鱼智能系统 — 鱼情预测、渔获日记、钓友分享",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1525",
+  "theme_color": "#1a8cff",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}

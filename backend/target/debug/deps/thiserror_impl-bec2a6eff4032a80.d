@@ -1,0 +1,17 @@
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\thiserror_impl-bec2a6eff4032a80.d: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\ast.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\attr.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\expand.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\fallback.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\fmt.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\generics.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\prop.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\scan_expr.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\unraw.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\valid.rs
+
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\thiserror_impl-bec2a6eff4032a80.dll: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\ast.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\attr.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\expand.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\fallback.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\fmt.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\generics.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\prop.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\scan_expr.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\unraw.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\valid.rs
+
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\lib.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\ast.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\attr.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\expand.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\fallback.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\fmt.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\generics.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\prop.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\scan_expr.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\unraw.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-impl-2.0.18\src\valid.rs:
+
+# env-dep:CARGO_PKG_VERSION_PATCH=18

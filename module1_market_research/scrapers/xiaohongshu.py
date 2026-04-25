@@ -1,22 +1,23 @@
-"""Xiaohongshu (小红书) fishing note scraper using Playwright.
+"""Xiaohongshu (小红书) fishing note scraper using Playwright API interception.
 
 Strategy:
-  1. Launch mobile-mode Chromium via Playwright
-  2. First run: open login page, wait for user to scan QR code
-  3. Save cookies → subsequent runs skip login
-  4. Search fishing keywords and extract note content
-  5. Parse with NLP to identify species, location, catch results
+  1. Login via desktop browser QR code → save cookies
+  2. Search by navigating to homepage, typing keyword, pressing Enter
+  3. Intercept the edith.xiaohongshu.com/api/sns/web/v1/search/notes API response
+  4. Extract structured data from the JSON response (title, user, likes, etc.)
+  5. Parse fishing info from titles using NLP keyword matching
 
 Usage:
-    python -m module1_market_research.scrapers.xiaohongshu --login
-    python -m module1_market_research.scrapers.xiaohongshu --search 路亚
-    python -m module1_market_research.scrapers.xiaohongshu --search 路亚 --max-notes 50
+    python -m module1_market_research.scrapers.xiaohongshu login
+    python -m module1_market_research.scrapers.xiaohongshu search --keyword 路亚
+    python -m module1_market_research.scrapers.xiaohongshu search --keyword 路亚 --max-notes 100
 """
 
 import argparse
 import json
 import re
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -44,12 +45,20 @@ LOCATION_PATTERN = re.compile(r"[#＃]([^#\s]{2,10}(?:水库|湖|河|江|塘|浜
 
 
 class XiaohongshuScraper:
-    """Scrape fishing notes from Xiaohongshu."""
+    """Scrape fishing notes from Xiaohongshu via API interception."""
 
     BASE_URL = "https://www.xiaohongshu.com"
     COOKIE_PATH = Path("data/module1/cached_pages/xiaohongshu_cookies.json")
 
-    def __init__(self, headless: bool = False, slow_mo: int = 500):
+    # Desktop context params for search
+    VIEWPORT = {"width": 1280, "height": 800}
+    UA = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    )
+
+    def __init__(self, headless: bool = True, slow_mo: int = 200):
         self.headless = headless
         self.slow_mo = slow_mo
         self.cookie_dir = Path("data/module1/cached_pages")
@@ -60,15 +69,11 @@ class XiaohongshuScraper:
     # ------------------------------------------------------------------
 
     def _make_context(self, playwright):
-        """Create a browser context with mobile viewport."""
+        """Create a desktop browser context."""
         browser = playwright.chromium.launch(headless=self.headless, slow_mo=self.slow_mo)
         context = browser.new_context(
-            viewport={"width": 375, "height": 812},  # iPhone X
-            user_agent=(
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
-                "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-                "Version/17.0 Mobile/15E148 Safari/604.1"
-            ),
+            viewport=self.VIEWPORT,
+            user_agent=self.UA,
             locale="zh-CN",
         )
         return browser, context
@@ -78,24 +83,26 @@ class XiaohongshuScraper:
     # ------------------------------------------------------------------
 
     def login(self):
-        """Open browser and wait for user to scan QR code.
-
-        Call this once to save cookies for subsequent runs.
-        """
+        """Open browser and wait for user to scan QR code."""
         with sync_playwright() as p:
-            browser, context = self._make_context(p)
+            browser = p.chromium.launch(headless=False, slow_mo=500)
+            context = browser.new_context(
+                viewport={"width": 1280, "height": 800},
+                user_agent=self.UA,
+                locale="zh-CN",
+            )
             page = context.new_page()
-            page.goto(self.BASE_URL)
+            page.goto("https://www.xiaohongshu.com/login", wait_until="networkidle")
 
-            print("\n" + "=" * 50)
+            print()
+            print("=" * 50)
             print("  请在浏览器中扫码登录小红书")
+            print("  如果看不到二维码，点击「扫码登录」选项卡")
             print("  登录完成后按 Enter 继续...")
             print("=" * 50)
 
-            # Wait for user to press Enter
             input()
 
-            # Save cookies
             cookies = context.cookies()
             self._save_cookies(cookies)
             print(f"  Cookies saved ({len(cookies)} entries)")
@@ -113,154 +120,169 @@ class XiaohongshuScraper:
             json.dump(cookies, f, indent=2)
 
     # ------------------------------------------------------------------
-    # Search & scrape
+    # Search via API interception
     # ------------------------------------------------------------------
 
-    def search_notes(self, keyword: str, max_notes: int = 30) -> list[dict]:
-        """Search for a keyword and extract note metadata from search results.
+    def _search_on_page(self, page, keyword: str, max_notes: int = 50) -> list[dict]:
+        """Perform a single keyword search on an already-loaded page.
 
-        Returns list of {title, link} dicts.
+        Types keyword in search box, presses Enter, captures API response.
+        Returns list of parsed notes.
         """
+        results = []
+        accumulator = []
+
+        def on_response(response):
+            url = response.url
+            if "/api/sns/web/v1/search/notes" in url and response.status == 200:
+                try:
+                    data = response.json()
+                    accumulator.append(data)
+                except Exception:
+                    pass
+
+        page.on("response", on_response)
+
+        # Go to homepage
+        print(f"  Searching: {keyword}")
+        try:
+            page.goto(self.BASE_URL, wait_until="domcontentloaded", timeout=30000)
+            page.wait_for_timeout(2000)
+        except Exception:
+            # Retry once if timeout
+            try:
+                page.goto(self.BASE_URL, wait_until="domcontentloaded", timeout=30000)
+                page.wait_for_timeout(2000)
+            except Exception as e:
+                print(f"  Page load failed: {e}")
+                page.remove_listener("response", on_response)
+                return []
+
+        # Type and submit search
+        try:
+            page.evaluate('document.getElementById("search-input").focus()')
+            page.wait_for_timeout(200)
+            page.keyboard.type(keyword, delay=60)
+            page.wait_for_timeout(300)
+            page.keyboard.press("Enter")
+        except Exception as e:
+            print(f"  Search failed: {e}")
+            page.remove_listener("response", on_response)
+            return []
+
+        # Wait for API response
+        page.wait_for_timeout(3000)
+
+        # Parse results
+        for resp_data in accumulator:
+            if resp_data.get("data", {}).get("items"):
+                for item in resp_data["data"]["items"]:
+                    note = self._parse_search_item(item, keyword)
+                    if note:
+                        results.append(note)
+
+        # Pagination: scroll to load more
+        remaining = max_notes - len(results)
+        scroll_attempts = 0
+        while remaining > 0 and scroll_attempts < 3:
+            page.evaluate("window.scrollBy(0, 2000)")
+            page.wait_for_timeout(2000)
+            scroll_attempts += 1
+
+            new_count = 0
+            for resp_data in accumulator:
+                items = resp_data.get("data", {}).get("items", [])
+                for item in items:
+                    note = self._parse_search_item(item, keyword)
+                    if note and note["id"] not in {r["id"] for r in results}:
+                        results.append(note)
+                        new_count += 1
+
+            if new_count == 0:
+                break
+            remaining = max_notes - len(results)
+
+        page.remove_listener("response", on_response)
+        return results[:max_notes]
+
+    def search_by_keyword(self, keyword: str, max_notes: int = 50) -> list[dict]:
+        """Search notes for a single keyword (owns its browser session)."""
         with sync_playwright() as p:
             browser, context = self._make_context(p)
-
-            # Load saved cookies
             cookies = self._load_cookies()
             if cookies:
                 context.add_cookies(cookies)
             else:
-                print("  No saved cookies. Run --login first.")
+                print("  No saved cookies. Run 'login' first.")
                 browser.close()
                 return []
 
             page = context.new_page()
+            page.goto(self.BASE_URL, wait_until="networkidle", timeout=30000)
+            page.wait_for_timeout(1000)
 
-            # Search
-            search_url = f"{self.BASE_URL}/search/result?keyword={keyword}&source=web_search_result_notes"
-            print(f"  Searching: {keyword}")
-            page.goto(search_url, timeout=30000)
-            page.wait_for_timeout(3000)
-
-            # Scroll to load more
-            notes = []
-            seen_urls = set()
-
-            for scroll in range(5):  # up to 5 scrolls
-                # Extract note cards
-                cards = page.query_selector_all("a[href*='/explore/']")
-                for card in cards:
-                    href = card.get_attribute("href")
-                    if href and href not in seen_urls:
-                        seen_urls.add(href)
-                        full_url = f"{self.BASE_URL}{href}" if href.startswith("/") else href
-                        # Try to get title from the card
-                        title_el = card.query_selector("span, div")
-                        title = title_el.inner_text() if title_el else ""
-                        notes.append({
-                            "url": full_url,
-                            "title": title.strip()[:100],
-                            "keyword": keyword,
-                        })
-
-                if len(notes) >= max_notes:
-                    notes = notes[:max_notes]
-                    break
-
-                # Scroll down
-                page.evaluate("window.scrollBy(0, 800)")
-                page.wait_for_timeout(2000)
-
-            print(f"  Found {len(notes)} notes")
+            results = self._search_on_page(page, keyword, max_notes)
+            print(f"  Found {len(results)} notes for '{keyword}'")
             browser.close()
-            return notes
 
-    # ------------------------------------------------------------------
-    # Detail extraction
-    # ------------------------------------------------------------------
+        return results
 
-    def extract_note_detail(self, url: str) -> Optional[dict]:
-        """Open a single note and extract full content.
-
-        Returns dict with title, text, location, time, likes, images.
-        """
-        with sync_playwright() as p:
-            browser, context = self._make_context(p)
-
-            cookies = self._load_cookies()
-            if cookies:
-                context.add_cookies(cookies)
-            else:
-                browser.close()
+    @staticmethod
+    def _parse_search_item(item: dict, keyword: str) -> Optional[dict]:
+        """Parse a single search result item from the API response."""
+        try:
+            note_id = item.get("id", "")
+            note_card = item.get("note_card", {})
+            if not note_card:
                 return None
 
-            page = context.new_page()
+            title = note_card.get("display_title", "")
+            user_info = note_card.get("user", {})
+            interact = note_card.get("interact_info", {})
 
-            try:
-                page.goto(url, timeout=30000)
-                page.wait_for_timeout(3000)
-            except PwTimeout:
-                print(f"  Timeout: {url[:60]}")
-                browser.close()
-                return None
+            # Get publish time from corner_tag_info
+            publish_time = ""
+            tags = note_card.get("corner_tag_info", [])
+            for tag in tags:
+                if tag.get("type") == "publish_time":
+                    publish_time = tag.get("text", "")
 
-            result = {"url": url, "keyword": "", "fetched_at": datetime.now().isoformat()}
-
-            # Title
-            try:
-                title_el = page.query_selector("#detail-title, .title, h1")
-                result["title"] = title_el.inner_text().strip() if title_el else ""
-            except Exception:
-                result["title"] = ""
-
-            # Body text
-            try:
-                body_el = page.query_selector(".content, .note-text, article")
-                result["text"] = body_el.inner_text().strip() if body_el else ""
-            except Exception:
-                result["text"] = ""
-
-            # Location
-            try:
-                loc_el = page.query_selector(".location, [class*='location']")
-                result["location_raw"] = loc_el.inner_text().strip() if loc_el else ""
-            except Exception:
-                result["location_raw"] = ""
-
-            # Likes
-            try:
-                like_el = page.query_selector("[class*='like'] span, [class*='like']")
-                result["likes"] = like_el.inner_text().strip() if like_el else "0"
-            except Exception:
-                result["likes"] = "0"
-
-            # Time
-            try:
-                time_el = page.query_selector("time, [class*='date'], [class*='time']")
-                result["post_time"] = time_el.get_attribute("datetime") or time_el.inner_text().strip() if time_el else ""
-            except Exception:
-                result["post_time"] = ""
-
-            browser.close()
-            return result
+            return {
+                "id": note_id,
+                "keyword": keyword,
+                "title": title,
+                "nickname": user_info.get("nickname", ""),
+                "user_id": user_info.get("user_id", ""),
+                "likes": interact.get("liked_count", "0"),
+                "collects": interact.get("collected_count", "0"),
+                "comments": interact.get("comment_count", "0"),
+                "shares": interact.get("shared_count", "0"),
+                "note_type": note_card.get("type", ""),
+                "publish_time": publish_time,
+                "url": f"https://www.xiaohongshu.com/explore/{note_id}",
+                "fetched_at": datetime.now().isoformat(),
+            }
+        except Exception:
+            return None
 
     # ------------------------------------------------------------------
-    # NLP parsing
+    # NLP parsing (from title only, since full text is not accessible)
     # ------------------------------------------------------------------
 
     @staticmethod
-    def parse_fishing_info(text: str, location_raw: str = "") -> dict:
-        """Parse fishing-related information from note text.
+    def parse_fishing_info(title: str) -> dict:
+        """Parse fishing-related information from note title.
 
-        Returns dict with species, catch_result, location, confidence.
+        Returns dict with species, catch_result, location, has_fishing_info.
         """
         result = {
             "species": "",
-            "catch_result": "",  # positive, negative, unknown
+            "catch_result": "",
             "location": "",
             "has_fishing_info": False,
         }
 
-        if not text:
+        if not title:
             return result
 
         # Fish species keywords
@@ -272,30 +294,28 @@ class XiaohongshuScraper:
         }
 
         for kw, name in species_kw.items():
-            if kw in text:
+            if kw in title:
                 result["species"] = name
                 result["has_fishing_info"] = True
                 break
 
         # Catch result
-        if any(kw in text for kw in POSITIVE_CATCH):
+        if any(kw in title for kw in POSITIVE_CATCH):
             result["catch_result"] = "positive"
             result["has_fishing_info"] = True
-        elif any(kw in text for kw in NEGATIVE_CATCH):
+        elif any(kw in title for kw in NEGATIVE_CATCH):
             result["catch_result"] = "negative"
             result["has_fishing_info"] = True
 
-        # Location from text
-        loc_match = LOCATION_PATTERN.search(text)
+        # Location from text (match hashtags like #xxx水库)
+        loc_match = LOCATION_PATTERN.search(title)
         if loc_match:
             result["location"] = loc_match.group(1)
-        elif location_raw:
-            result["location"] = location_raw
 
         # Check if this is fishing related at all
         if not result["has_fishing_info"]:
             fishing_keywords_in_text = {"路亚", "钓鱼", "打龟", "空军", "爆护", "竿", "饵"}
-            if any(kw in text for kw in fishing_keywords_in_text):
+            if any(kw in title for kw in fishing_keywords_in_text):
                 result["has_fishing_info"] = True
 
         return result
@@ -305,33 +325,57 @@ class XiaohongshuScraper:
     # ------------------------------------------------------------------
 
     def crawl(self, keywords: list[str] = None, max_notes_per_keyword: int = 30) -> pd.DataFrame:
-        """Full crawl pipeline: search → detail → parse → DataFrame."""
+        """Full crawl pipeline: search API → parse → DataFrame.
+
+        Reuses a single browser session across all keywords.
+        """
         keywords = keywords or FISHING_KEYWORDS
         all_notes = []
 
-        for kw in keywords:
-            print(f"\n--- Keyword: {kw} ---")
-            notes = self.search_notes(kw, max_notes=max_notes_per_keyword)
-            for note in notes:
-                detail = self.extract_note_detail(note["url"])
-                if detail and detail.get("text"):
-                    info = self.parse_fishing_info(
-                        detail.get("text", ""),
-                        detail.get("location_raw", ""),
-                    )
+        with sync_playwright() as p:
+            browser, context = self._make_context(p)
+            cookies = self._load_cookies()
+            if cookies:
+                context.add_cookies(cookies)
+            else:
+                print("  No saved cookies. Run 'login' first.")
+                return pd.DataFrame()
+
+            page = context.new_page()
+            page.goto(self.BASE_URL, wait_until="networkidle", timeout=30000)
+            page.wait_for_timeout(1000)
+
+            all_pages = [page]
+            for i, kw in enumerate(keywords):
+                print(f"\n--- Keyword: {kw} ---")
+                if i > 0:
+                    p = context.new_page()
+                    all_pages.append(p)
+                else:
+                    p = all_pages[0]
+                notes = self._search_on_page(p, kw, max_notes=max_notes_per_keyword)
+
+                for note in notes:
+                    info = self.parse_fishing_info(note["title"])
                     all_notes.append({
                         "keyword": kw,
-                        "title": detail.get("title", ""),
-                        "text": detail.get("text", ""),
-                        "location": info["location"] or detail.get("location_raw", ""),
+                        "title": note["title"],
+                        "location": info["location"],
                         "species": info["species"],
                         "catch_result": info["catch_result"],
                         "has_fishing_info": info["has_fishing_info"],
-                        "likes": detail.get("likes", "0"),
-                        "post_time": detail.get("post_time", ""),
+                        "likes": note["likes"],
+                        "collects": note["collects"],
+                        "comments": note["comments"],
+                        "shares": note["shares"],
+                        "note_type": note["note_type"],
+                        "publish_time": note["publish_time"],
+                        "author": note["nickname"],
                         "url": note["url"],
-                        "fetched_at": detail.get("fetched_at", ""),
+                        "fetched_at": note["fetched_at"],
                     })
+
+            browser.close()
 
         df = pd.DataFrame(all_notes)
         return df
@@ -347,9 +391,15 @@ def cmd_login(args):
 
 
 def cmd_search(args):
-    scraper = XiaohongshuScraper(headless=args.headless, slow_mo=args.slow_mo)
-    kw = args.keyword or "路亚"
-    df = scraper.crawl(keywords=[kw], max_notes_per_keyword=args.max_notes)
+    scraper = XiaohongshuScraper(
+        headless=args.headless,
+        slow_mo=args.slow_mo,
+    )
+    if args.keyword:
+        keywords = [args.keyword]
+    else:
+        keywords = FISHING_KEYWORDS  # search all when no keyword specified
+    df = scraper.crawl(keywords=keywords, max_notes_per_keyword=args.max_notes)
 
     if df.empty:
         print("No notes found.")
@@ -377,10 +427,10 @@ def main():
     p_login.set_defaults(func=cmd_login)
 
     p_search = sub.add_parser("search", help="Search and scrape fishing notes")
-    p_search.add_argument("--keyword", "-k", default="路亚", help="Search keyword")
+    p_search.add_argument("--keyword", "-k", default=None, help="Search keyword (default: all fishing keywords)")
     p_search.add_argument("--max-notes", "-n", type=int, default=30, help="Max notes to scrape")
     p_search.add_argument("--headless", action="store_true", help="Run without GUI")
-    p_search.add_argument("--slow-mo", type=int, default=500, help="Slow down browser (ms)")
+    p_search.add_argument("--slow-mo", type=int, default=200, help="Slow down browser (ms)")
     p_search.set_defaults(func=cmd_search)
 
     args = parser.parse_args()

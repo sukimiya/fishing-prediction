@@ -1,0 +1,11 @@
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\powerfmt-b96c789e0a0059f0.d: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\buf.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\ext.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\smart_display.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\smart_display_impls.rs
+
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\libpowerfmt-b96c789e0a0059f0.rlib: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\buf.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\ext.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\smart_display.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\smart_display_impls.rs
+
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\libpowerfmt-b96c789e0a0059f0.rmeta: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\buf.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\ext.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\smart_display.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\smart_display_impls.rs
+
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\lib.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\buf.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\ext.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\smart_display.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\powerfmt-0.2.0\src\smart_display_impls.rs:

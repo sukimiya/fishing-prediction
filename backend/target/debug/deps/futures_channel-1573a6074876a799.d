@@ -1,0 +1,11 @@
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\futures_channel-1573a6074876a799.d: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\lock.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\mpsc\mod.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\mpsc\queue.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\oneshot.rs
+
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\libfutures_channel-1573a6074876a799.rlib: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\lock.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\mpsc\mod.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\mpsc\queue.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\oneshot.rs
+
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\libfutures_channel-1573a6074876a799.rmeta: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\lock.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\mpsc\mod.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\mpsc\queue.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\oneshot.rs
+
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\lib.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\lock.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\mpsc\mod.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\mpsc\queue.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\futures-channel-0.3.32\src\oneshot.rs:

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0b1525">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<title>FishPal 鱼情预测</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0b1525;color:#e0e8f0;min-height:100dvh}
+.hide{display:none!important}
+/* Header */
+.header{background:linear-gradient(135deg,#0d1f3c,#1a8cff);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.header h1 span{color:#ffd700}
+.header .user-info{font-size:13px;opacity:.8;display:flex;align-items:center;gap:8px}
+.header .logout-btn{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;cursor:pointer}
+/* Page */
+.page{padding:16px}
+.section-title{font-size:14px;font-weight:600;color:#8ab4f8;margin:16px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+/* Card */
+.card{background:#141f33;border-radius:16px;padding:20px;margin-bottom:12px;border:1px solid rgba(255,255,255,.05)}
+.card-title{font-size:14px;color:#8ab4f8;margin-bottom:8px}
+/* Buttons */
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s}.btn:active{transform:scale(.97)}
+.btn-primary{background:#1a8cff;color:#fff}
+.btn-primary:disabled{opacity:.4}
+.btn-secondary{background:rgba(255,255,255,.08);color:#e0e8f0;border:1px solid rgba(255,255,255,.1)}
+.btn-danger{background:#dc3545;color:#fff}
+/* Input */
+.input-group{margin-bottom:12px}
+.input-group label{display:block;font-size:12px;color:#8ab4f8;margin-bottom:4px}
+.input-group input,.input-group select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0d1f3c;color:#e0e8f0;font-size:15px;outline:none;transition:border .2s}
+.input-group input:focus{border-color:#1a8cff}
+/* Auth */
+.auth-logo{text-align:center;padding:40px 0 24px}
+.auth-logo .icon{width:64px;height:64px;background:#1a8cff;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:8px}
+.auth-logo h2{font-size:22px;font-weight:700}
+.auth-logo p{color:#8ab4f8;font-size:13px;margin-top:4px}
+.auth-tabs{display:flex;gap:8px;margin-bottom:20px}
+.auth-tabs button{flex:1;padding:10px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.06);color:#8ab4f8;transition:all .2s}
+.auth-tabs button.active{background:#1a8cff;color:#fff}
+/* Score */
+.score-ring{width:140px;height:140px;border-radius:50%;background:conic-gradient(#1a8cff 0deg,#1a8cff 288deg,#1f3a5c 288deg);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;position:relative}
+.score-ring .inner{width:110px;height:110px;border-radius:50%;background:#141f33;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-ring .value{font-size:36px;font-weight:700;line-height:1}
+.score-ring .value.Excellent,.score-ring .value.good{color:#4caf50}
+.score-ring .value.fair{color:#ff9800}
+.score-ring .value.poor{color:#f44336}
+.score-ring .label{font-size:14px;font-weight:600;margin-top:4px}
+.score-ring .label.Excellent,.score-ring .label.good{color:#4caf50}
+.score-ring .label.fair{color:#ff9800}
+.score-ring .label.poor{color:#f44336}
+.score-detail{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.score-detail .item{background:#0d1f3c;border-radius:10px;padding:10px;text-align:center}
+.score-detail .item .name{font-size:11px;color:#8ab4f8}
+.score-detail .item .val{font-size:18px;font-weight:700;margin-top:2px}
+/* Hourly */
+.hourly-grid{display:flex;overflow-x:auto;gap:6px;padding:4px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.hourly-grid::-webkit-scrollbar{display:none}
+.hourly-grid .hour{flex:0 0 52px;text-align:center;padding:8px 0;border-radius:10px;background:#0d1f3c}
+.hourly-grid .hour .time{font-size:11px;color:#8ab4f8}
+.hourly-grid .hour .bar{width:6px;height:40px;background:#1f3a5c;border-radius:4px;margin:6px auto;position:relative;overflow:hidden}
+.hourly-grid .hour .bar .fill{position:absolute;bottom:0;left:0;width:100%;border-radius:4px;background:linear-gradient(to top,#1a8cff,#4caf50);transition:height .5s}
+.hourly-grid .hour .val{font-size:11px;font-weight:600}
+.hourly-grid .hour.current{background:rgba(26,140,255,.15);border:1px solid rgba(26,140,255,.3)}
+/* Location */
+.location-row{display:flex;gap:8px}
+.location-row input{flex:1}
+.location-row .gps-btn{width:44px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0d1f3c;color:#1a8cff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* Loading */
+.spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,.1);border-top-color:#1a8cff;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1f3a5c;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:999;animation:toastIn .3s;max-width:80vw;text-align:center}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}}
+/* Upload */
+.upload-area{border:2px dashed rgba(255,255,255,.15);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-area:active{border-color:#1a8cff;background:rgba(26,140,255,.05)}
+.upload-area .icon{font-size:28px;margin-bottom:4px}
+.upload-area p{font-size:13px;color:#8ab4f8}
+/* Photo grid */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#0d1f3c;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-around;padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));z-index:100}
+.bottom-nav button{background:none;border:none;color:#8ab4f8;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 16px;transition:color .2s}
+.bottom-nav button .icon{font-size:20px}
+.bottom-nav button.active{color:#1a8cff}
+/* Error state */
+.error-state{text-align:center;padding:40px 20px;color:#f44336}
+.error-state .icon{font-size:40px;margin-bottom:8px}
+.error-state p{font-size:14px}
+/* Empty state */
+.empty-state{text-align:center;padding:30px;color:#8ab4f8}
+.empty-state .icon{font-size:36px;margin-bottom:8px}
+.empty-state p{font-size:14px}
+.map-container{width:100%;height:200px;border-radius:12px;overflow:hidden;margin:8px 0;border:1px solid rgba(255,255,255,.1);background:#0d1f3c}
+.address-display{font-size:12px;color:#8ab4f8;padding:4px 0;text-align:center;word-break:break-all}
+.map-wrapper{position:relative;border-radius:12px;overflow:hidden}
+.gps-float-btn{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:none;background:#fff;color:#555;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3);z-index:10;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.gps-float-btn:active{transform:scale(.92)}
+.search-wrapper{position:relative}
+.search-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#141f33;border:1px solid rgba(255,255,255,.1);border-radius:10px;max-height:200px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.search-dropdown .item{padding:10px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer}
+.search-dropdown .item:last-child{border-bottom:none}
+.search-dropdown .item:hover{background:rgba(26,140,255,.15)}
+.search-dropdown .item .name{color:#e0e8f0}
+.search-dropdown .item .addr{color:#8ab4f8;font-size:11px;margin-top:2px}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="header hide" id="header">
+  <h1>FishPal <span>🐟</span></h1>
+  <div class="user-info">
+    <span id="headerNick"></span>
+    <button class="logout-btn" onclick="logout()">退出</button>
+  </div>
+</header>
+
+<!-- Auth Page -->
+<div class="page" id="authPage">
+  <div class="auth-logo">
+    <div class="icon">🎣</div>
+    <h2>FishPal</h2>
+    <p>个人鱼情预测系统</p>
+  </div>
+  <div class="auth-tabs">
+    <button class="active" onclick="switchAuthTab('login')" id="tabLogin">登录</button>
+    <button onclick="switchAuthTab('register')" id="tabRegister">注册</button>
+  </div>
+
+  <div id="loginForm">
+    <div class="input-group">
+      <label>昵称</label>
+      <input type="text" id="loginNick" placeholder="输入昵称" autocomplete="nickname">
+    </div>
+    <button class="btn btn-primary" onclick="login()" id="loginBtn">登录</button>
+    <p style="text-align:center;margin-top:12px;color:#8ab4f8;font-size:12px">已注册的用户直接登录</p>
+  </div>
+
+  <div id="registerForm" class="hide">
+    <div class="input-group">
+      <label>昵称</label>
+      <input type="text" id="regNick" placeholder="输入昵称" autocomplete="nickname">
+    </div>
+    <div class="input-group">
+      <label>邀请码</label>
+      <input type="text" id="inviteCode" placeholder="输入邀请码">
+    </div>
+    <button class="btn btn-primary" onclick="register()" id="regBtn">注册</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app" class="hide">
+  <div class="page" id="pagePredict">
+    <!-- Location -->
+    <div class="card" style="padding:12px">
+      <div class="card-title">📍 当前位置</div>
+      <!-- Map + GPS float -->
+      <div class="map-wrapper">
+        <div id="mapContainer" class="map-container"></div>
+        <button class="gps-float-btn" onclick="getLocation()" id="gpsBtn" title="定位当前位置">📍</button>
+      </div>
+      <!-- Search -->
+      <div class="search-wrapper" style="margin-top:8px">
+        <input type="text" id="searchInput" placeholder="搜索钓点 (如: 淀山湖)" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0d1f3c;color:#e0e8f0;font-size:14px;outline:none" onkeydown="if(event.key==='Enter')searchPlace()">
+        <div id="searchDropdown" class="search-dropdown hide"></div>
+      </div>
+      <!-- Address -->
+      <div id="addressDisplay" class="address-display">获取位置中...</div>
+    </div>
+    <input type="hidden" id="latInput">
+    <input type="hidden" id="lonInput">
+
+    <!-- Loading -->
+    <div id="predictLoading" class="hide" style="text-align:center;padding:20px"><div class="spinner"></div><p style="margin-top:8px;color:#8ab4f8;font-size:13px">分析鱼情中...</p></div>
+
+    <!-- Prediction Result -->
+    <div id="predictResult" class="hide">
+      <div class="card" style="text-align:center">
+        <div class="score-ring" id="scoreRing">
+          <div class="inner">
+            <div class="value" id="scoreValue">0</div>
+            <div class="label" id="scoreLabel">-</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#8ab4f8;margin-top:4px">置信度 <span id="confidence">-</span></div>
+        <div class="score-detail" id="factorGrid"></div>
+      </div>
+    </div>
+
+    <!-- Hourly -->
+    <div id="hourlyResult" class="hide">
+      <div class="card">
+        <div class="card-title">⏰ 全天鱼情走势</div>
+        <div class="hourly-grid" id="hourlyGrid"></div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="predictError" class="hide error-state">
+      <div class="icon">⚠️</div>
+      <p id="errorMsg">出了点问题</p>
+    </div>
+
+    <!-- Empty -->
+    <div id="predictEmpty" class="hide empty-state">
+      <div class="icon">🎣</div>
+      <p>输入坐标查询鱼情</p>
+    </div>
+
+    <!-- Upload -->
+    <div class="card" id="uploadSection">
+      <div class="card-title">📸 今日渔获</div>
+      <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+        <div class="icon">📷</div>
+        <p>点击上传渔获照片</p>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" class="hide" onchange="uploadPhoto(event)">
+      <div class="photo-grid" id="photoGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav hide" id="bottomNav">
+  <button class="active" onclick="switchTab('predict')">
+    <span class="icon">🎣</span> 鱼情
+  </button>
+  <button onclick="switchTab('share')">
+    <span class="icon">📤</span> 分享
+  </button>
+</nav>
+
+<!-- Toast -->
+<div id="toast" class="hide"></div>
+
+<script>
+// State
+let token = localStorage.getItem('token');
+let nickname = localStorage.getItem('nickname');
+let currentTab = 'predict';
+let hourlyChartData = [];
+
+// Amap
+let amapMap = null;
+let amapMarker = null;
+let amapGeocoder = null;
+let amapPlaceSearch = null;
+let amapReady = false;
+
+// Init
+if (token) { showApp(); }
+initServiceWorker();
+loadAmap();
+
+// ======================== Auth ========================
+function switchAuthTab(tab) {
+  document.getElementById('tabLogin').className = tab === 'login' ? 'active' : '';
+  document.getElementById('tabRegister').className = tab === 'register' ? 'active' : '';
+  document.getElementById('loginForm').className = tab === 'login' ? '' : 'hide';
+  document.getElementById('registerForm').className = tab === 'register' ? '' : 'hide';
+}
+
+async function login() {
+  const nick = document.getElementById('loginNick').value.trim();
+  if (!nick) return toast('输入昵称');
+  const btn = document.getElementById('loginBtn'); btn.disabled = true;
+  try {
+    const r = await api('/auth/login', { nickname: nick });
+    if (r.success) { token = r.token; nickname = r.nickname; localStorage.setItem('token', token); localStorage.setItem('nickname', nickname); showApp(); }
+    else toast(r.error || '登录失败');
+  } catch(e) { toast('网络错误: '+e.message); }
+  btn.disabled = false;
+}
+
+async function register() {
+  const nick = document.getElementById('regNick').value.trim();
+  const code = document.getElementById('inviteCode').value.trim();
+  if (!nick || !code) return toast('填写完整信息');
+  const btn = document.getElementById('regBtn'); btn.disabled = true;
+  try {
+    const r = await api('/auth/register', { nickname: nick, invite_code: code });
+    if (r.success) { token = r.token; nickname = r.nickname; localStorage.setItem('token', token); localStorage.setItem('nickname', nickname); showApp(); }
+    else toast(r.error || '注册失败');
+  } catch(e) { toast('网络错误: '+e.message); }
+  btn.disabled = false;
+}
+
+function logout() {
+  token = null; nickname = null; localStorage.removeItem('token'); localStorage.removeItem('nickname');
+  document.getElementById('authPage').className = 'page';
+  document.getElementById('header').classList.add('hide');
+  document.getElementById('app').classList.add('hide');
+  document.getElementById('bottomNav').classList.add('hide');
+}
+
+// ======================== API ========================
+async function api(path, body) {
+  const opts = { headers: { 'Content-Type': 'application/json' } };
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  if (body) opts.method = 'POST', opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+  return data;
+}
+
+async function apiGet(path) {
+  const opts = { headers: {} };
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+  return data;
+}
+
+// ======================== Amap ========================
+function loadAmap() {
+  if (window.AMap || document.querySelector('script[src*="webapi.amap.com"]')) return;
+  const s = document.createElement('script');
+  s.src = 'https://webapi.amap.com/maps?v=2.0&key=77180fdda9146d43495bfccbb75b1e11';
+  s.onload = () => initAmap();
+  s.onerror = (e) => console.error('[Amap] script load failed', e);
+  document.head.appendChild(s);
+}
+
+function initAmap() {
+  if (amapReady) return;
+  AMap.plugin(['AMap.PlaceSearch', 'AMap.Geocoder'], () => {
+    amapGeocoder = new AMap.Geocoder({ city: '全国', radius: 1000, key: '49fa3c22173dffdbd01ea4e3fb5122a2' });
+    amapPlaceSearch = new AMap.PlaceSearch({ city: '全国', pageSize: 20, extensions: 'all', key: '49fa3c22173dffdbd01ea4e3fb5122a2' });
+    amapReady = true;
+    tryCreateMap();
+  });
+}
+
+function tryCreateMap() {
+  if (!amapReady || amapMap || !document.getElementById('mapContainer')) return;
+  const container = document.getElementById('mapContainer');
+  if (container.offsetParent === null) return;
+  amapMap = new AMap.Map('mapContainer', { zoom: 13, center: [121.5, 31.2], mapStyle: 'amap://styles/dark' });
+  amapMap.on('click', e => updateLocation(e.lnglat.getLat(), e.lnglat.getLng()));
+  // Auto GPS on first load
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => updateLocation(pos.coords.latitude, pos.coords.longitude),
+      () => { document.getElementById('addressDisplay').textContent = '点击地图或搜索选择钓点'; },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  } else {
+    document.getElementById('addressDisplay').textContent = '点击地图或搜索选择钓点';
+  }
+}
+
+function updateLocation(lat, lng, centerMap = true) {
+  document.getElementById('latInput').value = lat.toFixed(4);
+  document.getElementById('lonInput').value = lng.toFixed(4);
+  if (amapMap) {
+    if (amapMarker) amapMarker.setMap(null);
+    amapMarker = new AMap.Marker({ position: [lng, lat], map: amapMap });
+    if (centerMap) amapMap.setCenter([lng, lat]);
+    amapMap.setZoom(14);
+  }
+  fetch(`https://restapi.amap.com/v3/geocode/regeo?key=49fa3c22173dffdbd01ea4e3fb5122a2&location=${lng},${lat}&radius=1000&extensions=base`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === '1' && data.regeocode) {
+        document.getElementById('addressDisplay').textContent = data.regeocode.formattedAddress;
+      }
+    })
+    .catch(e => console.error('[Amap] regeo error:', e));
+  autoPredict();
+}
+
+function searchPlace() {
+  const keyword = document.getElementById('searchInput').value.trim();
+  if (!keyword) return;
+  const dropdown = document.getElementById('searchDropdown');
+  dropdown.innerHTML = '';
+  clearTimeout(dropdown._timer);
+  dropdown._timer = setTimeout(() => dropdown.classList.add('hide'), 8000);
+  dropdown.innerHTML = '<div class="item" style="color:#8ab4f8">搜索中...</div>';
+  dropdown.classList.remove('hide');
+
+  fetch(`https://restapi.amap.com/v3/assistant/inputtips?key=49fa3c22173dffdbd01ea4e3fb5122a2&keywords=${encodeURIComponent(keyword)}&offset=20&datatype=all`)
+    .then(r => r.json())
+    .then(data => {
+      dropdown.innerHTML = '';
+      if (data.status === '1' && data.tips && data.tips.length > 0) {
+        // Filter out tips without location (can't map them)
+        const withLoc = data.tips.filter(t => typeof t.location === 'string' && t.location.includes(','));
+        if (withLoc.length === 0) {
+          dropdown.innerHTML = '<div class="item" style="color:#ff9800">未找到带坐标的地点 "' + keyword + '"</div>';
+          dropdown.classList.remove('hide');
+          return;
+        }
+        withLoc.forEach(tip => {
+          const item = document.createElement('div');
+          item.className = 'item';
+          const addr = tip.address || tip.district || '';
+          item.innerHTML = `<div class="name">${tip.name}</div><div class="addr">${addr || '未知地址'}</div>`;
+          item.onclick = () => selectSearchResult(tip);
+          dropdown.appendChild(item);
+        });
+        dropdown.classList.remove('hide');
+      } else {
+        dropdown.innerHTML = '<div class="item" style="color:#ff9800">未找到 "' + keyword + '"，试试更简单的关键词</div>';
+        dropdown.classList.remove('hide');
+      }
+    })
+    .catch(e => {
+      console.error('[Amap] search error:', e);
+      dropdown.innerHTML = '<div class="item" style="color:#f44336">搜索失败，请重试</div>';
+      dropdown.classList.remove('hide');
+    });
+}
+
+function selectSearchResult(tip) {
+  document.getElementById('searchDropdown').classList.add('hide');
+  document.getElementById('searchInput').value = tip.name;
+  const [lng, lat] = tip.location.split(',');
+  const addr = tip.address || tip.district || '';
+  document.getElementById('addressDisplay').textContent = tip.name + (addr ? ' · ' + addr : '');
+  updateLocation(parseFloat(lat), parseFloat(lng), true);
+}
+
+// Hide search dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrapper')) {
+    document.getElementById('searchDropdown').classList.add('hide');
+  }
+});
+
+// ======================== Auto Predict ========================
+async function autoPredict() {
+  const lat = document.getElementById('latInput').value;
+  const lon = document.getElementById('lonInput').value;
+  if (!lat || !lon) return;
+  hideResult();
+  document.getElementById('predictLoading').classList.remove('hide');
+  try {
+    const [pred, dayData] = await Promise.all([
+      apiGet(`/predict?lat=${lat}&lon=${lon}`),
+      apiGet(`/predict/day?lat=${lat}&lon=${lon}`)
+    ]);
+    showResult(pred);
+    if (dayData.success && dayData.hourly) showHourly(dayData.hourly);
+  } catch(e) {
+    document.getElementById('predictLoading').classList.add('hide');
+    document.getElementById('predictError').classList.remove('hide');
+    document.getElementById('errorMsg').textContent = e.message;
+  }
+}
+
+// ======================== Location ========================
+function getLocation() {
+  if (!navigator.geolocation) return toast('浏览器不支持定位');
+  const btn = document.getElementById('gpsBtn'); btn.textContent = '⏳';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      updateLocation(pos.coords.latitude, pos.coords.longitude);
+      btn.textContent = '📍';
+    },
+    () => { toast('获取位置失败，手动输入吧'); btn.textContent = '📍'; },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+function showResult(data) {
+  document.getElementById('predictLoading').classList.add('hide');
+  document.getElementById('predictError').classList.add('hide');
+  document.getElementById('predictResult').classList.remove('hide');
+
+  const score = Math.round((data.score || 0) * 100);
+  const cls = data.label?.includes('Excellent') ? 'Excellent' : data.label?.includes('Good') ? 'good' : data.label?.includes('Fair') ? 'fair' : 'poor';
+
+  document.getElementById('scoreValue').textContent = score + '%';
+  document.getElementById('scoreValue').className = 'value ' + cls;
+  document.getElementById('scoreLabel').textContent = data.label || '-';
+  document.getElementById('scoreLabel').className = 'label ' + cls;
+  document.getElementById('confidence').textContent = Math.round((data.confidence || 0) * 100) + '%';
+
+  // Score ring
+  const deg = (data.score || 0) * 360;
+  document.getElementById('scoreRing').style.background = `conic-gradient(#1a8cff 0deg, #1a8cff ${deg}deg, #1f3a5c ${deg}deg)`;
+
+  // Factors
+  const grid = document.getElementById('factorGrid');
+  grid.innerHTML = '';
+  if (data.factors) {
+    Object.entries(data.factors).forEach(([k, v]) => {
+      const pct = Math.round((typeof v === 'number' ? v : v.score || 0) * 100);
+      grid.innerHTML += `<div class="item"><div class="name">${factorName(k)}</div><div class="val">${pct}%</div></div>`;
+    });
+  }
+}
+
+function showHourly(hourly) {
+  document.getElementById('hourlyResult').classList.remove('hide');
+  const grid = document.getElementById('hourlyGrid');
+  grid.innerHTML = '';
+  const now = new Date().getHours();
+  hourly.forEach(h => {
+    const pct = Math.round((h.score || 0) * 100);
+    const isCurrent = h.hour === now;
+    grid.innerHTML += `<div class="hour ${isCurrent ? 'current' : ''}">
+      <div class="time">${String(h.hour).padStart(2,'0')}:00</div>
+      <div class="bar"><div class="fill" style="height:${pct}%"></div></div>
+      <div class="val">${pct}%</div>
+    </div>`;
+  });
+  // Scroll to current hour
+  setTimeout(() => { const el = grid.querySelector('.current'); if (el) el.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' }); }, 100);
+}
+
+function factorName(k) {
+  const m = { temperature:'水温', pressure:'气压', time_of_day:'时段', moon_phase:'月相', season:'季节', weather_condition:'天气', wind:'风力', water_level:'水位' };
+  return m[k] || k;
+}
+
+function hideResult() {
+  document.getElementById('predictResult').classList.add('hide');
+  document.getElementById('hourlyResult').classList.add('hide');
+  document.getElementById('predictError').classList.add('hide');
+  document.getElementById('predictEmpty').classList.add('hide');
+  document.getElementById('predictLoading').classList.add('hide');
+}
+
+// ======================== Tab Switching ========================
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.bottom-nav button').forEach(b => b.className = '');
+  document.querySelectorAll('.bottom-nav button')[tab === 'predict' ? 0 : 1].className = 'active';
+
+  document.getElementById('pagePredict').className = tab === 'predict' ? 'page' : 'page hide';
+  document.getElementById('uploadSection').className = tab === 'predict' ? 'card' : 'card hide';
+
+  // Show upload section always for now
+  document.getElementById('uploadSection').className = 'card';
+}
+
+// ======================== Upload ========================
+async function uploadPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  toast('照片上传功能待接入后端');
+  // TODO: implement upload API
+}
+
+// ======================== UI ========================
+function showApp() {
+  document.getElementById('authPage').classList.add('hide');
+  document.getElementById('header').classList.remove('hide');
+  document.getElementById('app').classList.remove('hide');
+  document.getElementById('bottomNav').classList.remove('hide');
+  document.getElementById('headerNick').textContent = nickname || '';
+  hideResult();
+  tryCreateMap();
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast';
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.add('hide'), 2500);
+}
+
+function initServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+}
+
+// Keyboard shortcut: Enter triggers login/register
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (!document.getElementById('authPage').classList.contains('hide')) {
+      if (!document.getElementById('loginForm').classList.contains('hide')) login();
+      else register();
+    }
+  }
+});
+
+console.log('FishPal PWA loaded. Token:', token ? 'yes' : 'no');
+</script>
+</body>
+</html>

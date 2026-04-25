@@ -1,0 +1,14 @@
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\thiserror-471dad919e93df7b.d: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\aserror.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\display.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\var.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\private.rs C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\build\thiserror-8385c3622ee4e6c7\out/private.rs
+
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\libthiserror-471dad919e93df7b.rlib: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\aserror.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\display.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\var.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\private.rs C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\build\thiserror-8385c3622ee4e6c7\out/private.rs
+
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\deps\libthiserror-471dad919e93df7b.rmeta: C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\lib.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\aserror.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\display.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\var.rs C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\private.rs C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\build\thiserror-8385c3622ee4e6c7\out/private.rs
+
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\lib.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\aserror.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\display.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\var.rs:
+C:\Users\sukim\.cargo\registry\src\rsproxy.cn-e3de039b2554c837\thiserror-2.0.18\src\private.rs:
+C:\Users\sukim\Documents\code\fishing-prediction\backend\target\debug\build\thiserror-8385c3622ee4e6c7\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\sukim\\Documents\\code\\fishing-prediction\\backend\\target\\debug\\build\\thiserror-8385c3622ee4e6c7\\out
