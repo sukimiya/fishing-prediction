@@ -390,6 +390,16 @@ def cmd_login(args):
     scraper.login()
 
 
+def _load_keywords(path: str = None) -> list[str]:
+    """Load keywords from keyword.txt, falling back to FISHING_KEYWORDS."""
+    if path is None:
+        path = Path(__file__).parent / "keyword.txt"
+    p = Path(path)
+    if p.exists():
+        return [line.strip() for line in p.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return FISHING_KEYWORDS
+
+
 def cmd_search(args):
     scraper = XiaohongshuScraper(
         headless=args.headless,
@@ -398,7 +408,7 @@ def cmd_search(args):
     if args.keyword:
         keywords = [args.keyword]
     else:
-        keywords = FISHING_KEYWORDS  # search all when no keyword specified
+        keywords = _load_keywords()  # try keyword.txt first, fallback to hardcoded
     df = scraper.crawl(keywords=keywords, max_notes_per_keyword=args.max_notes)
 
     if df.empty:

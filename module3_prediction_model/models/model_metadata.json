@@ -1,0 +1,95 @@
+{
+  "total_entries": 40,
+  "fishing_related": 11,
+  "with_species": 6,
+  "catch_rate": {
+    "positive": 13,
+    "negative": 1,
+    "rate": 0.9286
+  },
+  "by_month": {
+    "1": {
+      "total": 1,
+      "fishing_related": 0
+    },
+    "2": {
+      "total": 2,
+      "fishing_related": 0
+    },
+    "3": {
+      "total": 6,
+      "fishing_related": 3
+    },
+    "4": {
+      "total": 10,
+      "fishing_related": 2
+    },
+    "6": {
+      "total": 1,
+      "fishing_related": 0
+    },
+    "7": {
+      "total": 2,
+      "fishing_related": 0
+    },
+    "8": {
+      "total": 2,
+      "fishing_related": 1
+    },
+    "9": {
+      "total": 4,
+      "fishing_related": 2
+    },
+    "10": {
+      "total": 3,
+      "fishing_related": 2
+    },
+    "11": {
+      "total": 3,
+      "fishing_related": 1
+    },
+    "12": {
+      "total": 6,
+      "fishing_related": 0
+    }
+  },
+  "by_species": {
+    "白条": {
+      "count": 1,
+      "catch_rate": 1.0
+    },
+    "鳜鱼": {
+      "count": 4,
+      "catch_rate": 1.0
+    },
+    "鲈鱼": {
+      "count": 1,
+      "catch_rate": null
+    }
+  },
+  "generated_at": "2026-04-27T01:51:49.655050",
+  "train_accuracy": 1.0,
+  "feature_importance": {
+    "month": 0.3965,
+    "collects_log": 0.2282,
+    "shares_log": 0.1972,
+    "comments_log": 0.0909,
+    "likes_log": 0.0776,
+    "species_": 0.0096,
+    "species_白条": 0.0,
+    "species_鳜鱼": 0.0
+  },
+  "model_type": "GradientBoosting",
+  "n_features": 8,
+  "n_train_samples": 14,
+  "feature_columns": [
+    "month",
+    "likes_log",
+    "collects_log",
+    "comments_log",
+    "shares_log",
+    "species_",
+    "species_白条",
+    "species_鳜鱼"
+  ]
+}

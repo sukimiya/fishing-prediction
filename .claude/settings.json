@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jar tf *)",
+      "Bash(tasklist)",
+      "Bash(npx tsc --noEmit)"
+    ]
+  }
+}

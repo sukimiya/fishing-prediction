@@ -31,3 +31,5 @@ outputs/module3/
 # OS
 Thumbs.db
 .DS_Store
+
+**/target/
